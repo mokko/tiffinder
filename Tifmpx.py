@@ -91,7 +91,7 @@ class TifMpx:
             try:
                 shutil.copy(source, target_fn)
             except:
-                logging.debug(f"Source file not found: {source}")
+                logging.debug(f"Copy failed: {source}")
         # else:
         #    print ("Target exists already, not copied again")
 
