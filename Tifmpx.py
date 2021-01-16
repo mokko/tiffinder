@@ -88,6 +88,8 @@ class TifMpx:
         if outdir is None:
             self._log = open(os.devnull,"w")
         else:
+            if not os.path.exists(outdir):
+                os.mkdir (outdir)
             log_fn = os.path.join(outdir,'report.log')
             #line buffer so I can CTRL+C the program at any time
             self._log = open(log_fn, mode="a", buffering=1)
