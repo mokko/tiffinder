@@ -66,7 +66,7 @@ class TifMpx:
                     self._copy_fn(target_dir, mulId, dateiname)
             else:
                 logging.debug(f"tif equivalent not found: '{dateiname}'")
-            c = c + 1
+            c += 1
 
     ### PRIVATE ###
 
