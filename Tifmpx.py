@@ -16,7 +16,6 @@ USAGE Commandline (to do)
     Tifmpx.py -m mpx_fn, -s scan_dir, -t target_dir
 """
 
-
 import datetime
 import json
 import logging
@@ -26,7 +25,7 @@ from lxml import etree
 from pathlib import Path
 
 cache_fn = ".tifmpx.json"
-
+nsmap = {"m": "http://www.mpx.org/mpx"}
 
 class TifMpx:
     def __init__(self, scan_dir):
@@ -54,15 +53,13 @@ class TifMpx:
         tree = etree.parse(mpx_fn)
         r = tree.xpath(
             "/m:museumPlusExport/m:multimediaobjekt[m:erweiterung = 'jpg']",
-            namespaces={"m": "http://www.mpx.org/mpx"},
+            namespaces=nsmap
         )
 
         c = 1
         for mume in r:
             mulId = mume.get("mulId")
-            dateiname = mume.findtext(
-                "m:dateiname", namespaces={"m": "http://www.mpx.org/mpx"}
-            )
+            dateiname = mume.findtext("m:dateiname", namespaces=nsmap)
             print(f"{c}:{mulId}: '{dateiname}'")
             if dateiname in self.cache.values():
                 if target_dir is not None:
