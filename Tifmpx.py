@@ -34,6 +34,7 @@ USAGE Commandline (to do)
     Tifmpx.py -m mpx_fn, -s scan_dir, -t target_dir
 
 """
+import datetime
 import json
 import os
 import shutil 
@@ -44,7 +45,6 @@ cache_fn = ".tifmpx.json"
 
 class TifMpx:
     def __init__ (self, scan_dir):
-
         if os.path.exists(cache_fn):
             print (f"*Loading cache '{cache_fn}'")
             with open(cache_fn, 'r') as f:
@@ -53,30 +53,44 @@ class TifMpx:
             self.cache = self._scan_dir (scan_dir)
 
     def search_mpx (self, mpx_fn, target_dir=None):
+        if target_dir is not None:
+            self._init_log (target_dir)
+
         tree = etree.parse(mpx_fn)
         r = tree.xpath('/m:museumPlusExport/m:multimediaobjekt', 
             namespaces={'m':'http://www.mpx.org/mpx'})
 
         c = 1
-        f = 1
         for mume in r:
             mulId = mume.get("mulId")
             dateiname = mume.findtext("m:dateiname", namespaces={'m':'http://www.mpx.org/mpx'})
             print (f"{c}:{mulId}: '{dateiname}'")
             if dateiname in self.cache: 
-                #print (f"{f}: {self.cache[dateiname]}")
                 if target_dir is not None:
                     self._copy_fn (target_dir, mulId, dateiname)
+            else:
+                self._write_log (f"tif equivalent not found: '{dateiname}'")
             c = c + 1
 
 ### PRIVATE ###
+
+    def _close_log (self):
+        self._log.close()
 
     def _copy_fn (self, target_dir, mulId, dateiname):
         target_fn = os.path.join(target_dir, mulId+'.'+ dateiname+'.tif')
         print (f"-> {target_fn}")
         if not os.path.exists (target_fn):
-            shutil.copy (self.cache[dateiname], target_fn)
+            try:
+                shutil.copy (self.cache[dateiname], target_fn)
+            except:
+                self._write_log(f"Source file not found: {self.cache[dateiname]}")
+        else:
+            print ("Target exists already!")
 
+    def _init_log (self,outdir):
+        #line buffer so everything gets written when it's written, so I can CTRL+C the program
+        self._log=open(outdir+'/report.log', mode="a", buffering=1)
 
     def _scan_dir (self, scan_dir):
         cache = {}
@@ -92,6 +106,11 @@ class TifMpx:
         with open(cache_fn, 'w') as f:
             json.dump(cache, f)
         return cache
+
+
+    def _write_log (self, msg):
+        self._log.write(f"[{datetime.datetime.now()}] {msg}\n")
+        print (msg)
 
 
 
