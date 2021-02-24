@@ -44,6 +44,8 @@ from pathlib import Path
 import shutil
 import time
 
+from glob import iglob
+
 class Tif_finder:
     def __init__(self, cache_fn): 
         """initialize object
@@ -69,17 +71,16 @@ class Tif_finder:
         have been removed from disk. See iscandir to avoid that.
         
         Repeat to scan multiple dirs."""
-
+        scan_dir = os.path.join(scan_dir, '**', '*.tif')
         print (f"* About to scan {scan_dir}")
-
-        files=Path(scan_dir).rglob('*.tif') # returns generator
-        files2=Path(scan_dir).rglob('*.tiff')
-        for path in list(files) + list(files2):
+        for path in iglob(scan_dir, recursive=True):
+            path = Path(path)
             abs = path.resolve()
             base = os.path.basename(abs)
-            (trunk,ext)=os.path.splitext(base)
+            (trunk,ext) = os.path.splitext(base)
+            needle = trunk.replace("_", " ")
             print (f"{abs}")
-            self.cache[str(abs)]=str(trunk)
+            self.cache[str(abs)] = needle
         print ('* Writing updated cache file')
         self._write_cache()
 
