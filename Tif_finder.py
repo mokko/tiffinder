@@ -37,6 +37,7 @@
 import datetime
 import hashlib
 import json
+import logging
 from lxml import etree
 import os
 from openpyxl import Workbook, load_workbook
@@ -45,7 +46,6 @@ import shutil
 import time
 
 from glob import iglob
-
 
 class Tif_finder:
     def __init__(self, cache_fn):
@@ -194,15 +194,15 @@ class Tif_finder:
     ############# PRIVATE STUFF #############
 
     def _init_log(self, outdir):
-        # line buffer so everything gets written when it's written, so I can CTRL+C the program
-        self._log = open(outdir + "/report.log", mode="a", buffering=1)
+        log_fn = os.path.join (target_dir, "report.log")
 
-    def _write_log(self, msg):
-        self._log.write(f"[{datetime.datetime.now()}] {msg}\n")
-        print(msg)
-
-    def _close_log(self):
-        self._log.close()
+        logging.basicConfig(
+            datefmt="%Y%m%d %I:%M:%S %p",
+            filename=log_fn,
+            filemode="w",
+            level=logging.DEBUG,
+            format="%(asctime)s: %(message)s",
+        )
 
     def _target_fn(self, fn):
         """Return filename that doesn't exist yet.
@@ -235,18 +235,18 @@ class Tif_finder:
         if not os.path.isdir(target_dir):
             raise ValueError("Error: Target is not directory!")
         # print ('cp %s -> %s' %(source, target_dir))
-        self._init_log(target_dir)
+
+        self._init_log(target_dir)        
         s_base = os.path.basename(source)
         target_fn = self._target_fn(
             os.path.join(target_dir, s_base)
         )  # should be full path
         if not os.path.isfile(target_fn):  # no overwrite
-            self._write_log(f"{source} -> {target_fn}")
+            logging.debug(f"{source} -> {target_fn}")
             try:
                 shutil.copy2(source, target_fn)  # copy2 preserves file info
             except:
-                self._write_log(f"File not found: {source}")
-        self._close_log()
+                logging.debug(f"File not found: {source}")
 
     def _hash_copy(self, source, target_dir, objId):
         """ Copy *.tif to target_dir/objId.hash.tif"""
@@ -257,12 +257,11 @@ class Tif_finder:
         hash = self._file_hash(source)
         target_fn = os.path.join(target_dir, f"{objId}.{hash}.tif")
         if not os.path.isfile(target_fn):  # no overwrite
-            self._write_log(f"{source} -> {target_fn}")
+            logging.debug(f"{source} -> {target_fn}")
             try:
                 shutil.copy2(source, target_fn)  # copy2 preserves file info
             except:
-                self._write_log(f"File not found: {source}")
-        self._close_log()
+                logging.debug(f"File not found: {source}")
 
     def _file_hash(self, fn):
         print(f"About to hash '{fn}'...", end="")
@@ -326,7 +325,7 @@ if __name__ == "__main__":
     from Tif_finder import Tif_finder
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--cache_fn")
+    parser.add_argument("-c", "--cache_fn", required=True)
     parser.add_argument("-m", "--mpx")
     parser.add_argument("-s", "--search")
     parser.add_argument("-S", "--show_cache", action="store_true")
@@ -335,12 +334,7 @@ if __name__ == "__main__":
     parser.add_argument("-x", "--xls")
 
     args = parser.parse_args()
-    if args.cache_fn is None:
-        home = expanduser("~")
-        args.cache_fn = os.path.join(home, ".tif_finder.json")
-        print("*No cache specified, looking at default location")
-    else:
-        print(f"*Loading specified cache '{args.cache_fn}'")
+    print(f"*Loading specified cache '{args.cache_fn}'")
 
     t = Tif_finder(args.cache_fn)
 
