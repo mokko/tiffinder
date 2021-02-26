@@ -47,6 +47,7 @@ import time
 
 from glob import iglob
 
+
 class Tif_finder:
     def __init__(self, cache_fn):
         """initialize object
@@ -194,7 +195,7 @@ class Tif_finder:
     ############# PRIVATE STUFF #############
 
     def _init_log(self, outdir):
-        log_fn = os.path.join (target_dir, "report.log")
+        log_fn = os.path.join(target_dir, "report.log")
 
         logging.basicConfig(
             datefmt="%Y%m%d %I:%M:%S %p",
@@ -236,7 +237,7 @@ class Tif_finder:
             raise ValueError("Error: Target is not directory!")
         # print ('cp %s -> %s' %(source, target_dir))
 
-        self._init_log(target_dir)        
+        self._init_log(target_dir)
         s_base = os.path.basename(source)
         target_fn = self._target_fn(
             os.path.join(target_dir, s_base)
@@ -286,7 +287,7 @@ class Tif_finder:
     def _write_cache(self):
         print("* Writing updated cache file")
         with open(self.cache_fn, "w") as f:
-            json.dump(self.cache, f, indent = 1)
+            json.dump(self.cache, f, indent=1)
 
 
 if __name__ == "__main__":
