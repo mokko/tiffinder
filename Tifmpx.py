@@ -27,6 +27,7 @@ from pathlib import Path
 cache_fn = ".tifmpx.json"
 nsmap = {"m": "http://www.mpx.org/mpx"}
 
+
 class TifMpx:
     def __init__(self, scan_dir):
         if os.path.exists(cache_fn):
@@ -53,7 +54,7 @@ class TifMpx:
         tree = etree.parse(mpx_fn)
         r = tree.xpath(
             "/m:museumPlusExport/m:multimediaobjekt[m:erweiterung = 'jpg']",
-            namespaces=nsmap
+            namespaces=nsmap,
         )
 
         c = 1
@@ -122,10 +123,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Find and copy tif from mpx")
     parser.add_argument(
-        "-m", 
-        "--mpx_fn", 
-        required=True, 
-        help="Location of mpx file (full path)"
+        "-m", "--mpx_fn", required=True, help="Location of mpx file (full path)"
     )
     parser.add_argument(
         "-s",
@@ -141,4 +139,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     o = TifMpx(args.scan_dir)
-    o.search_mpx(args.mpx_fn, args.target_dir)  
+    o.search_mpx(args.mpx_fn, args.target_dir)
