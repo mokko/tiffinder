@@ -1,10 +1,7 @@
 """
 Shrink *.tif files proportionally so that the longest size is 3508 px.
-
 If longest size is already smaller than 3508 px, leave it be.
-
 DinA4 is 210 x 297 mm; at 300 dpi this makes 2480 x 3508 px.
-
 Currently, always act on the pwd.
 """
 
