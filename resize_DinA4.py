@@ -19,9 +19,11 @@ For info on exif tags see:
 
 from pathlib import Path
 from PIL import Image, TiffTags
-#from PIL.ExifTags import TAGS
+
+# from PIL.ExifTags import TAGS
 
 shape = "-DinA4.tif"
+
 
 def per_file(f):
     im = Image.open(f)
@@ -35,19 +37,20 @@ def per_file(f):
     if ratio < 1:  # only shrink, dont inflate
         new_str = f.stem + shape
         if not Path(new_str).is_file():
-            #print(Image.TiffTags.TAGS_V2)
+            # print(Image.TiffTags.TAGS_V2)
             print(f"{f}: ({im.width}, {im.height}) -> {new_size} {ratio}")
-            #I get error with test image
-            #https://github.com/python-pillow/Pillow/issues/5314
-            #Image.DEBUG=True
+            # I get error with test image
+            # https://github.com/python-pillow/Pillow/issues/5314
+            # Image.DEBUG=True
             im.thumbnail(new_size, resample=Image.LANCZOS)
             TiffTags.TAGS_V2[33723] = TiffTags.TagInfo("IptcNaaInfo", TiffTags.BYTE, 0)
             print(f"\t saving {new_str}")
             im.save(new_str)
 
+
 if __name__ == "__main__":
     files = Path(".").glob("*.tif")
-    for f in files: 
+    for f in files:
         if not f.match(f"*{shape}"):
-            #print (f"OPENING {f}")
+            # print (f"OPENING {f}")
             per_file(f)
