@@ -1,8 +1,20 @@
 """
-Shrink *.tif files proportionally so that the longest size is 3508 px.
-If longest size is already smaller than 3508 px, leave it be.
-DinA4 is 210 x 297 mm; at 300 dpi this makes 2480 x 3508 px.
-Currently, always act on *.tif files on pwd
+Shrink *.tif files proportionally so that the longest size is 3508 px. If 
+longest size is already smaller than 3508 px, leave it be. DinA4 is 210x297 mm.
+At 300 dpi this makes 2480 x 3508 px. Currently, this script acts on *.tif (on 
+pwd).
+
+Pillow's resize creates a new image without exif information.
+Pillow is known to have issues with metadata; specifically it's allergic to non
+standard tags or tags in the wrong format, so I have to manually delete those
+below. 
+
+Internally, pillow seems to use LibTiff to access tiffs.
+
+You can use exif2 for a different libary providing access to metadata. 
+
+For info on exif tags see:
+* https://exiv2.org/tags.html
 """
 
 from pathlib import Path
@@ -25,8 +37,7 @@ def per_file(f):
         if not Path(new_str).is_file():
             #print(Image.TiffTags.TAGS_V2)
             print(f"{f}: ({im.width}, {im.height}) -> {new_size} {ratio}")
-            #pillow's resize creates new image without exif information 
-            #so we're using thumbnail, but I get error with test image
+            #I get error with test image
             #https://github.com/python-pillow/Pillow/issues/5314
             #Image.DEBUG=True
             im.thumbnail(new_size, resample=Image.LANCZOS)
@@ -40,4 +51,3 @@ if __name__ == "__main__":
         if not f.match(f"*{shape}"):
             #print (f"OPENING {f}")
             per_file(f)
-
