@@ -38,6 +38,7 @@ import datetime
 import hashlib
 import json
 import logging
+import pprint
 from lxml import etree
 import os
 from openpyxl import Workbook, load_workbook
@@ -143,10 +144,12 @@ class Tif_finder:
         print(f"* Sheet title: {ws.title}")
         col = ws["A"]  # zero or one based?
         for needle in col:
-            # print ('Needle: %s' % needle.value)
-            if needle != "None":
+            if needle.value is not None:
+                print (f"* Looking for '{needle.value}'")
                 found = self.search(needle.value)
-                print(f"found {found}")
+                print (f"* FOUND: {len(found)}")
+                for each in found: 
+                    print (each)
                 if target_dir is not None:
                     for f in found:
                         self._simple_copy(f, target_dir)
@@ -195,7 +198,7 @@ class Tif_finder:
     ############# PRIVATE STUFF #############
 
     def _init_log(self, outdir):
-        log_fn = os.path.join(target_dir, "report.log")
+        log_fn = os.path.join(outdir, "report.log")
 
         logging.basicConfig(
             datefmt="%Y%m%d %I:%M:%S %p",

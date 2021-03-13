@@ -16,7 +16,7 @@ def per_tif(f):
             ratio = 720 / im.height
             new_size = round(im.width * ratio), round(im.height * ratio)
             print(f"{f}: ({im.width}, {im.height}) -> {new_size} {ratio}")
-            im.thumbnail(new_size, resample=Image.LANCZOS)
+            im.thumbnail(new_size)
         rgb_im = im.convert("RGB")
         print(f"\t saving {new_str}")
         rgb_im.save(new_str)
