@@ -2,7 +2,7 @@
 
     Uses a json file as cache to store path information (e.g. .tif_cache.json)
 
-    For command-line front-end see end of this file.
+    For command-line front-end see find_tif.py.
 
     USAGE as class:
         tf = Tiffinder(cache_fn)
@@ -24,6 +24,7 @@
         r = tf.search_mpx(mpx_fn, outdir) 
                               # search for all identNr in mpx, copy to outdir
                               # output: objId.hash.tif
+
         #do stuff with search results
         tf.cp_results(results, target_dir, [policy])
         tf.log_results(results, [policy])
@@ -31,8 +32,8 @@
 
     Filename Policy
     - default: Preserve except if not unique
-    - hash: objId.hash.tif
-    - DAid: DAid.origname.tif
+    - hash: objId.hash.tif (not implemented anymore)
+    - DAid: DAid.origname.tif (not implemented yet)
 
     When a file is copied, the original filename is usually preserved; only if 
     multiple tifs have the same name they are varied by adding a number. The 
@@ -64,6 +65,7 @@ class Tiffinder:
         """initialize object
 
         cache_fn: location (path) of cache file"""
+
         self.cache_fn = Path(cache_fn)
         # print ('cache_fn %s' % cache_fn)
 
@@ -84,6 +86,7 @@ class Tiffinder:
         have been removed from disk. See iscandir to avoid that.
 
         Repeat to scan multiple dirs."""
+
         print(f"*Scanning '{scan_dir}'")
         for path in Path(scan_dir).rglob("**/*.ti[f*]"):
             abs = Path(path).resolve()
@@ -99,7 +102,7 @@ class Tiffinder:
 
         Do the same scan as in scandir, but also remove cache items whose files
         don't exist on disk anymore and do a repeated scan only if cache is
-        older than 1 day.
+        older than 10 days.
 
         Scan multiple directories by passing a list:
             tf.iscandir (['.', '.'])
@@ -121,23 +124,19 @@ class Tiffinder:
         else:
             print("*Cache still young")
 
-    def search(self, needle, target_dir=None):
+    def search(self, needle):
         """Search tif cache for a single needle.
 
         Return list of matches:
-            ls=self.search(needle)
-
-        If target_dir is provided copy matches to that dir."""
+            ls=self.search(needle)"""
 
         # print ("* Searching cache for needle '%s'" % needle)
         return [path for path in self.cache if needle in self.cache[path]]
 
-    def search_xlsx(self, xls_fn, target_dir=None):
+    def search_xlsx(self, xls_fn):
         """Search tif cache for needles from Excel file.
 
-        Needles are expected (first sheet, column A)
-        If target_dir is not None, copy the file to respective directory.
-        If target_dir is None just report matching paths to STDOUT"""
+        Needles are coming from xlsx filed (first sheet, column A)"""
 
         print(f"* Searching cache for needles from Excel file {xls_fn}")
 
@@ -157,12 +156,10 @@ class Tiffinder:
                 results.extend(found)
         return results
 
-    def search_mpx(self, mpx_fn, target_dir=None):
+    def search_mpx(self, mpx_fn):
         """Search tif cache for identNr from mpx.
 
-        For each identNr from mpx look for corresponding tifs in cache; if
-        target_dir exists, copy them to target_dir. If target_dir doesn't exist
-        just report them to STDOUT."""
+        For each identNr from mpx look for corresponding tifs in cache"""
 
         if target_dir is not None:
             target_dir = os.path.realpath(target_dir)
@@ -245,6 +242,7 @@ class Tiffinder:
             ...
         Expects a full path as str for source, returns Pathlib object.
         """
+
         i = 2
         new = Path(source)
         suffix = Path(new).suffix
@@ -266,6 +264,7 @@ class Tiffinder:
 
         Note: if you run this command multiple times you'll get duplicates
         """
+
         i = 2
         source = Path(source)
         target_dir = Path(target_dir)
