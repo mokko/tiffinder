@@ -49,22 +49,18 @@
 
 import datetime
 import filecmp
-import hashlib
 import json
 import logging
-import pprint
-from lxml import etree
-
-# import os
 import shutil
 import time
+from lxml import etree
 from PIL import Image
 from openpyxl import Workbook, load_workbook
 from pathlib import Path
 from glob import iglob
 
 
-class Tif_finder:
+class Tiffinder:
     def __init__(self, cache_fn):
         """initialize object
 
@@ -334,10 +330,10 @@ if __name__ == "__main__":
     USAGE:
     Cache
         #new cache by scanning dir for *.tif[f]
-        Tif_finder.py -c cache.json -u scan_dir
+        Tif_finder.py -c cache.json --new_cache scan_dir
 
         #same, but use intelligent cache update
-        Tif_finder.py -c cache.json -i -u scan_dir
+        Tif_finder.py -c cache.json --update cache scan_dir
 
         #show cache using specified cache_fn
         Tif_finder.py -c cache.json  -S
@@ -393,7 +389,10 @@ if __name__ == "__main__":
     # main command
     cmd = parser.add_mutually_exclusive_group(required=True)
     cmd.add_argument(
-        "-n", "--new_cache", help="Write new cache, expects scan dir", nargs="?"
+        "-n", 
+        "--new_cache", 
+        help="Write new cache, expects scan dir", 
+        nargs="?"
     )
     cmd.add_argument(
         "-u",
@@ -402,10 +401,16 @@ if __name__ == "__main__":
         nargs="?",
     )
     cmd.add_argument(
-        "-S", "--show_cache", action="store_true", help="Show cache; no parameter"
+        "-S", 
+        "--show_cache", 
+        action="store_true", 
+        help="Show cache; no parameter"
     )
     cmd.add_argument(
-        "-s", "--search", help="Search for a single needle", nargs="?"
+        "-s", 
+        "--search", 
+        help="Search for a single needle", 
+        nargs="?"
     )  # needle
     cmd.add_argument(
         "-x",
@@ -414,13 +419,19 @@ if __name__ == "__main__":
         nargs="?",
     )
     cmd.add_argument(
-        "-m", "--search_mpx", help="Search for all needles in mpx/identNr", nargs="?"
+        "-m", 
+        "--search_mpx", 
+        help="Search for all needles in mpx/identNr", 
+        nargs="?"
     )
 
     # modify output
     output = parser.add_mutually_exclusive_group()
     output.add_argument(
-        "-o", "--output", action="store_true", help="Modify output (preview, log)"
+        "-o", 
+        "--output", 
+        action="store_true", 
+        help="Modify output (preview, log)"
     )
     output.add_argument(
         "-p",
