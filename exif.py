@@ -1,5 +1,5 @@
-#source https://python.plainenglish.io/reading-a-photographs-exif-data-with-python-and-pillow-a29fceafb761
-#by Chriss Webb
+# source https://python.plainenglish.io/reading-a-photographs-exif-data-with-python-and-pillow-a29fceafb761
+# by Chriss Webb
 
 import datetime
 from fractions import Fraction
@@ -41,9 +41,7 @@ def generate_exif_dict(filepath):
             if len(str(value)) > 64:
                 value = str(value)[:65] + "..."
 
-            exif_data[v] = {"tag": k,
-                            "raw": value,
-                            "processed": value}
+            exif_data[v] = {"tag": k, "raw": value, "processed": value}
 
         image.close()
 
@@ -65,39 +63,42 @@ def _create_lookups():
 
     lookups = {}
 
-    lookups["metering_modes"] = ("Undefined",
-                                 "Average",
-                                 "Center-weighted average",
-                                 "Spot",
-                                 "Multi-spot",
-                                 "Multi-segment",
-                                 "Partial")
+    lookups["metering_modes"] = (
+        "Undefined",
+        "Average",
+        "Center-weighted average",
+        "Spot",
+        "Multi-spot",
+        "Multi-segment",
+        "Partial",
+    )
 
-    lookups["exposure_programs"] = ("Undefined",
-                                    "Manual",
-                                    "Program AE",
-                                    "Aperture-priority AE",
-                                    "Shutter speed priority AE",
-                                    "Creative (Slow speed)",
-                                    "Action (High speed)",
-                                    "Portrait ",
-                                    "Landscape",
-                                    "Bulb")
+    lookups["exposure_programs"] = (
+        "Undefined",
+        "Manual",
+        "Program AE",
+        "Aperture-priority AE",
+        "Shutter speed priority AE",
+        "Creative (Slow speed)",
+        "Action (High speed)",
+        "Portrait ",
+        "Landscape",
+        "Bulb",
+    )
 
-    lookups["resolution_units"] = ("",
-                                   "Undefined",
-                                   "Inches",
-                                   "Centimetres")
+    lookups["resolution_units"] = ("", "Undefined", "Inches", "Centimetres")
 
-    lookups["orientations"] = ("",
-                               "Horizontal",
-                               "Mirror horizontal",
-                               "Rotate 180",
-                               "Mirror vertical",
-                               "Mirror horizontal and rotate 270 CW",
-                               "Rotate 90 CW",
-                               "Mirror horizontal and rotate 90 CW",
-                               "Rotate 270 CW")
+    lookups["orientations"] = (
+        "",
+        "Horizontal",
+        "Mirror horizontal",
+        "Rotate 180",
+        "Mirror vertical",
+        "Mirror horizontal and rotate 270 CW",
+        "Rotate 90 CW",
+        "Mirror horizontal and rotate 90 CW",
+        "Rotate 270 CW",
+    )
 
     return lookups
 
@@ -108,62 +109,79 @@ def _process_exif_dict(exif_dict):
 
     lookups = _create_lookups()
 
-    exif_dict["DateTime"]["processed"] = \
-        datetime.datetime.strptime(exif_dict["DateTime"]["raw"], date_format)
+    exif_dict["DateTime"]["processed"] = datetime.datetime.strptime(
+        exif_dict["DateTime"]["raw"], date_format
+    )
 
-    exif_dict["DateTimeOriginal"]["processed"] = \
-        datetime.datetime.strptime(exif_dict["DateTimeOriginal"]["raw"], date_format)
+    exif_dict["DateTimeOriginal"]["processed"] = datetime.datetime.strptime(
+        exif_dict["DateTimeOriginal"]["raw"], date_format
+    )
 
-    exif_dict["DateTimeDigitized"]["processed"] = \
-        datetime.datetime.strptime(exif_dict["DateTimeDigitized"]["raw"], date_format)
+    exif_dict["DateTimeDigitized"]["processed"] = datetime.datetime.strptime(
+        exif_dict["DateTimeDigitized"]["raw"], date_format
+    )
 
-    exif_dict["FNumber"]["processed"] = \
-        _derationalize(exif_dict["FNumber"]["raw"])
-    exif_dict["FNumber"]["processed"] = \
-        "f{}".format(exif_dict["FNumber"]["processed"])
+    exif_dict["FNumber"]["processed"] = _derationalize(exif_dict["FNumber"]["raw"])
+    exif_dict["FNumber"]["processed"] = "f{}".format(exif_dict["FNumber"]["processed"])
 
-    exif_dict["MaxApertureValue"]["processed"] = \
-        _derationalize(exif_dict["MaxApertureValue"]["raw"])
-    exif_dict["MaxApertureValue"]["processed"] = \
-        "f{:2.1f}".format(exif_dict["MaxApertureValue"]["processed"])
+    exif_dict["MaxApertureValue"]["processed"] = _derationalize(
+        exif_dict["MaxApertureValue"]["raw"]
+    )
+    exif_dict["MaxApertureValue"]["processed"] = "f{:2.1f}".format(
+        exif_dict["MaxApertureValue"]["processed"]
+    )
 
-    exif_dict["FocalLength"]["processed"] = \
-        _derationalize(exif_dict["FocalLength"]["raw"])
-    exif_dict["FocalLength"]["processed"] = \
-        "{}mm".format(exif_dict["FocalLength"]["processed"])
+    exif_dict["FocalLength"]["processed"] = _derationalize(
+        exif_dict["FocalLength"]["raw"]
+    )
+    exif_dict["FocalLength"]["processed"] = "{}mm".format(
+        exif_dict["FocalLength"]["processed"]
+    )
 
-    exif_dict["FocalLengthIn35mmFilm"]["processed"] = \
-        "{}mm".format(exif_dict["FocalLengthIn35mmFilm"]["raw"])
+    exif_dict["FocalLengthIn35mmFilm"]["processed"] = "{}mm".format(
+        exif_dict["FocalLengthIn35mmFilm"]["raw"]
+    )
 
-    exif_dict["Orientation"]["processed"] = \
-        lookups["orientations"][exif_dict["Orientation"]["raw"]]
+    exif_dict["Orientation"]["processed"] = lookups["orientations"][
+        exif_dict["Orientation"]["raw"]
+    ]
 
-    exif_dict["ResolutionUnit"]["processed"] = \
-        lookups["resolution_units"][exif_dict["ResolutionUnit"]["raw"]]
+    exif_dict["ResolutionUnit"]["processed"] = lookups["resolution_units"][
+        exif_dict["ResolutionUnit"]["raw"]
+    ]
 
-    exif_dict["ExposureProgram"]["processed"] = \
-        lookups["exposure_programs"][exif_dict["ExposureProgram"]["raw"]]
+    exif_dict["ExposureProgram"]["processed"] = lookups["exposure_programs"][
+        exif_dict["ExposureProgram"]["raw"]
+    ]
 
-    exif_dict["MeteringMode"]["processed"] = \
-        lookups["metering_modes"][exif_dict["MeteringMode"]["raw"]]
+    exif_dict["MeteringMode"]["processed"] = lookups["metering_modes"][
+        exif_dict["MeteringMode"]["raw"]
+    ]
 
-    exif_dict["XResolution"]["processed"] = \
-        int(_derationalize(exif_dict["XResolution"]["raw"]))
+    exif_dict["XResolution"]["processed"] = int(
+        _derationalize(exif_dict["XResolution"]["raw"])
+    )
 
-    exif_dict["YResolution"]["processed"] = \
-        int(_derationalize(exif_dict["YResolution"]["raw"]))
+    exif_dict["YResolution"]["processed"] = int(
+        _derationalize(exif_dict["YResolution"]["raw"])
+    )
 
-    exif_dict["ExposureTime"]["processed"] = \
-        _derationalize(exif_dict["ExposureTime"]["raw"])
-    exif_dict["ExposureTime"]["processed"] = \
-        str(Fraction(exif_dict["ExposureTime"]["processed"]).limit_denominator(8000))
+    exif_dict["ExposureTime"]["processed"] = _derationalize(
+        exif_dict["ExposureTime"]["raw"]
+    )
+    exif_dict["ExposureTime"]["processed"] = str(
+        Fraction(exif_dict["ExposureTime"]["processed"]).limit_denominator(8000)
+    )
 
-    exif_dict["ExposureBiasValue"]["processed"] = \
-        _derationalize(exif_dict["ExposureBiasValue"]["raw"])
-    exif_dict["ExposureBiasValue"]["processed"] = \
-        "{} EV".format(exif_dict["ExposureBiasValue"]["processed"])
+    exif_dict["ExposureBiasValue"]["processed"] = _derationalize(
+        exif_dict["ExposureBiasValue"]["raw"]
+    )
+    exif_dict["ExposureBiasValue"]["processed"] = "{} EV".format(
+        exif_dict["ExposureBiasValue"]["processed"]
+    )
 
     return exif_dict
+
 
 def print_exif_dict(exif_dict):
     for k, v in exif_dict.items():
@@ -184,10 +202,8 @@ if __name__ == "__main__":
     print("-----------------")
 
     files = Path(".").glob("*.tif")
-    for f in files: 
+    for f in files:
         exif_dict = generate_exif_dict(f)
         print_exif_dict(exif_dict)
-    #except IOError as ioe:
-    #print(ioe)
-
-
+    # except IOError as ioe:
+    # print(ioe)

@@ -35,6 +35,7 @@ import argparse
 from pathlib import Path
 from Tiffinder import Tiffinder
 
+
 def _output(self, args, r):
     if args.justlog is not False:
         print(f"*JUST LOG")
@@ -45,6 +46,7 @@ def _output(self, args, r):
     else:
         print(f"*COPYING RESULTS")
         self.cp_results(r, args.target_dir)
+
 
 parser = argparse.ArgumentParser(
     description="tiffinder: Find *.tif[f] files by identNr"
@@ -63,10 +65,7 @@ if __name__ == "__main__":
     # main command
     cmd = parser.add_mutually_exclusive_group(required=True)
     cmd.add_argument(
-        "-n", 
-        "--new_cache", 
-        help="Write new cache, expects scan dir", 
-        nargs="?"
+        "-n", "--new_cache", help="Write new cache, expects scan dir", nargs="?"
     )
     cmd.add_argument(
         "-u",
@@ -75,16 +74,10 @@ if __name__ == "__main__":
         nargs="?",
     )
     cmd.add_argument(
-        "-S", 
-        "--show_cache", 
-        action="store_true", 
-        help="Show cache; no parameter"
+        "-S", "--show_cache", action="store_true", help="Show cache; no parameter"
     )
     cmd.add_argument(
-        "-s", 
-        "--search", 
-        help="Search for a single needle", 
-        nargs="?"
+        "-s", "--search", help="Search for a single needle", nargs="?"
     )  # needle
     cmd.add_argument(
         "-x",
@@ -93,19 +86,13 @@ if __name__ == "__main__":
         nargs="?",
     )
     cmd.add_argument(
-        "-m", 
-        "--search_mpx", 
-        help="Search for all needles in mpx/identNr", 
-        nargs="?"
+        "-m", "--search_mpx", help="Search for all needles in mpx/identNr", nargs="?"
     )
 
     # modify output
     output = parser.add_mutually_exclusive_group()
     output.add_argument(
-        "-o", 
-        "--output", 
-        action="store_true", 
-        help="Modify output (preview, log)"
+        "-o", "--output", action="store_true", help="Modify output (preview, log)"
     )
     output.add_argument(
         "-p",

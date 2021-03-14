@@ -323,4 +323,3 @@ class Tiffinder:
         rgb_im = im.convert("RGB")
         print(f" saving {target}")
         rgb_im.save(str(target))
-
