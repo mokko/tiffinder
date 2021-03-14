@@ -14,10 +14,10 @@
 
         #three different searches
         ls=tf.search (needle) # matching path in list, for single needle
-        r = tf.search_xls(needle) # with multiple needles from xls, 
+        r = tf.search_xlsx(needle) # with multiple needles from xls, 
                               # search cache & report to STDOUT
 
-        r = tf.search_xls(xls_fn, outdir) 
+        r = tf.search_xlsx(xls_fn, outdir) 
                               # search cache for needles from xls, copy found 
                               # tifs to outdir
                               # output: orig-filename (no).tif
@@ -68,11 +68,11 @@ class Tif_finder:
         """initialize object
 
         cache_fn: location (path) of cache file"""
-        self.cache_fn = cache_fn
+        self.cache_fn = Path(cache_fn)
         # print ('cache_fn %s' % cache_fn)
 
         if Path(self.cache_fn).exists():
-            print(f"*cache exists, loading '{self.cache_fn}'")
+            print(f"*Cache exists, loading '{self.cache_fn}'")
             with open(self.cache_fn, "r") as f:
                 self.cache = json.load(f)
         else:
@@ -88,8 +88,8 @@ class Tif_finder:
         have been removed from disk. See iscandir to avoid that.
 
         Repeat to scan multiple dirs."""
-        scan_dir = Path(scan_dir).joinpath("**", "*.ti[f*]")
-        for path in iglob(scan_dir, recursive=True):
+        print(f"*Scanning '{scan_dir}'")
+        for path in Path(scan_dir).rglob("**/*.ti[f*]"):
             abs = Path(path).resolve()
             needle = abs.stem.replace("_", " ")
             print(f"{abs}")
@@ -109,12 +109,12 @@ class Tif_finder:
             tf.iscandir (['.', '.'])
         """
 
-        print(f"* About to i-scan {scan_dir}")
-        cache_mtime = os.path.getmtime(self.cache_fn)
+        print(f"*About to i-scan {scan_dir}")
+        cache_mtime = self.cache_fn.lstat().st_mtime
         now = time.time()
         # print (f"DIFF:{now-cache_mtime}")
         # only if cache is older than one day
-        if now - cache_mtime > 3600 * 24:
+        if now - cache_mtime > 10*3600 * 24:
             # remove items from cache if file doesn't exist anymore
             for path in list(self.cache):
                 if not os.path.exists(path):
@@ -122,6 +122,8 @@ class Tif_finder:
                     del self.cache[path]
             for dir in scan_dir:
                 self.scandir(dir)  # writes cache
+        else:
+            print ("*Cache still young")
 
     def search(self, needle, target_dir=None):
         """Search tif cache for a single needle.
@@ -134,7 +136,7 @@ class Tif_finder:
         # print ("* Searching cache for needle '%s'" % needle)
         return [path for path in self.cache if needle in self.cache[path]]
 
-    def search_xls(self, xls_fn, target_dir=None):
+    def search_xlsx(self, xls_fn, target_dir=None):
         """Search tif cache for needles from Excel file.
 
         Needles are expected (first sheet, column A)
@@ -208,34 +210,38 @@ class Tif_finder:
         """ Copy files from the search_results to target_dir."""
         self._init_log(target_dir)
 
-        for f in results:
-            target_fn = self._default_policy(f, target_dir)
-            print(f"{f}->")
+        for fn in results:
+            target_fn = self._default_policy(fn, target_dir)
+            print(f"{fn}->")
             if target_fn is None:
                 print(" identical file already exists at target")
             else:
                 print(f" {target_fn}")
-                self._simple_copy(f, target_fn)
+                self._simple_copy(fn, target_fn)
 
     def log_results(self, results, args):
         """ Just print the log to target_dir, don't copy anything."""
-        for f in results:
-            print(f)
+        for fn in results:
+            print(fn)
             #todo logging
 
-    def preview_results(self, results, target_dir, policy=None):
-        """Make previews for the search results and copy those to target_dir."""
-        for f in results:
-            target_fn = self._default_policy(f, target_dir, "jpg")
-            if target_fn is None:
-                print(" identical file already exists at target")
-            else:
-                self._preview(f, target_fn)
+    def preview_results(self, results, target_dir):
+        """Make previews for the search results and copy those to target_dir.
+        
+        Always uses change extension naming policy.
+        """
+        
+        
+        
+        for fn in results:
+            target_fn = self._change_extension_policy(fn, target_dir, "jpg")
+            print (f"***{target_fn}")
+            self._preview(fn, target_fn)
 
 
     ############# PRIVATE STUFF #############
 
-    def _default_policy(self, source, target_dir, new_ext=None):
+    def _default_policy(self, source, target_dir):
         """Returns target filename as pathlib object or None if identical
         file is already present at target_dir.
         
@@ -248,23 +254,33 @@ class Tif_finder:
         """
         i = 2
         new = Path(source)
-        if new_ext is None:
-            suffix = Path(new).suffix
-        else:
-            suffix = "." + new_ext
-
+        suffix = Path(new).suffix
         parent = new.parent
         target_fn = Path(target_dir).joinpath(new.name)
         #print(f"TTT:{target_fn}")
-        while target_fn.exists():  # why while?
-            #file with that name exists already
+        while target_fn.exists():  
             if filecmp.cmp(source, target_fn, shallow=False):
-                #print(f"POLICY: identical file, no copy")
+                print(f"identical file exists already in target_dir, no copy")
                 return None
             else:
                 target_fn = parent.joinpath(f"{new.stem} ({i}){suffix}")
             i += 1
         #print(f"POLICY: [{i}] {new}")
+        return target_fn
+
+    def _change_extension_policy (self, source, target_dir, new_ext):
+        """Like default policy just without identity check.
+        
+        Note: if you run this command multiple times you'll get duplicates
+        """
+        i = 2
+        source = Path(source)
+        target_dir = Path(target_dir)
+        suffix = "."+new_ext
+        target_fn = target_dir.joinpath(source.stem + suffix)
+        while target_fn.exists():  # why while?
+            target_fn = target_dir.joinpath(f"{source.stem} ({i}){suffix}")
+            i += 1
         return target_fn
 
     def _init_log(self, outdir):
@@ -298,31 +314,31 @@ class Tif_finder:
             raise ValueError(f"Excel file not found: {xls_fn}")
 
     def _write_cache(self):
-        print("* Writing updated cache file")
+        print("*Writing cache file")
         with open(self.cache_fn, "w") as f:
             json.dump(self.cache, f, indent=1)
 
-    def _preview(f, target_fn):
-        im = Image.open(f)
+    def _preview(self, source, target):
+        im = Image.open(source)
 
         if im.height > 720:
             ratio = 720 / im.height
             new_size = round(im.width * ratio), round(im.height * ratio)
-            print(f"{f}: ({im.width}, {im.height}) -> {new_size} {ratio}")
+            print(f"{source}: ({im.width}, {im.height}) -> {new_size} {ratio}")
             im.thumbnail(new_size)
         rgb_im = im.convert("RGB")
-        print(f"\t saving {target_fn}")
-        rgb_im.save(target_fn)
+        print(f" saving {target}")
+        rgb_im.save(str(target))
 
 
 if __name__ == "__main__":
-    """
+    """Find *.tif[f] files by identNr - Command line interface
     USAGE:
     Cache
         #new cache by scanning dir for *.tif[f]
         Tif_finder.py -c cache.json -u scan_dir
 
-        #same, but update cache 
+        #same, but use intelligent cache update 
         Tif_finder.py -c cache.json -i -u scan_dir
 
         #show cache using specified cache_fn
@@ -354,71 +370,57 @@ if __name__ == "__main__":
 
     # from Tif_finder import Tif_finder
     def _output(self, args, r):
-        print("*Using args")
-        print(args)
-        if args.justlog is not None:
-            print(f"*Just log")
-            self.log_results(r, args.target_dir, args)
+        if args.justlog is not False:
+            print(f"*JUST LOG")
+            self.log_results(r, args.target_dir)
+        elif args.preview is not False:
+                print(f"*PREVIEW RESULTS")
+                self.preview_results(r, args.target_dir)
         else:
-            if args.preview is not None:
-                print(f"*Preview results")
-                self.preview_results(r, args.target_dir, args.policy)
-            else:
-                print(f"*Copying results")
-                self.cp_results(r, args.target_dir, args.policy)
+            print(f"*COPYING RESULTS")
+            self.cp_results(r, args.target_dir)
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description = "Tif_finder: Find *.tif[f] files by identNr")
 
-    # cache
-    parser.add_argument("-c", "--cache_fn", required=True)
-    parser.add_argument("-S", "--show_cache", action="store_true")
-    parser.add_argument("-u", "--update_cache")
-    parser.add_argument("-i", "--intelligent", action="store_true")
+    # cache + target_dir
+    parser.add_argument("-c", "--cache_fn", required=True, help="Path cache file")
+    parser.add_argument("-t", "--target_dir", default=Path("."), help="target directory to write to; defaults to current working directory")
+    # main command
+    cmd = parser.add_mutually_exclusive_group(required=True)
+    cmd.add_argument("-n", "--new_cache", help="Write new cache, expects scan dir", nargs="?")
+    cmd.add_argument("-u", "--update_cache", help="Update existing cache, expects scan dir", nargs="?")
+    cmd.add_argument("-S", "--show_cache", action="store_true", help="Show cache; no parameter")
+    cmd.add_argument("-s", "--search", help="Search for a single needle", nargs="?") # needle
+    cmd.add_argument("-x", "--search_xlsx", help="Search for all needles in first column of first sheet", nargs="?")
+    cmd.add_argument("-m", "--search_mpx", help="Search for all needles in mpx/identNr", nargs="?")
 
-    # search
-    parser.add_argument("-m", "--mpx")
-    parser.add_argument("-s", "--search") # needle
-    parser.add_argument("-x", "--xls")
-
-    # output
-    # if no target_dir, assume current working directory
-    parser.add_argument("-t", "--target_dir", default=".")
-    parser.add_argument("-P", "--preview") # not implemented
-    parser.add_argument("-p", "--policy")  # not implemented
-    parser.add_argument("-j", "--justlog") # not implemented
+    # modify output
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument("-o", "--output", action="store_true", help="Modify output (preview, log)") 
+    output.add_argument("-p", "--preview", action="store_true", help="Don't copy tif, but make a smaller preview instead") 
+    output.add_argument("-j", "--justlog", action="store_true", help="Don't write any image files, just log") 
     
     args = parser.parse_args()
-    if args.target_dir is None:
-        args.target_dir = Path(".")
-    
+    print(args)
     print(f"*Loading specified cache '{args.cache_fn}'")
 
     t = Tif_finder(args.cache_fn)
 
-    if args.update_cache is not None:
-        print(f"* About to scan {args.update_cache}")
-        if args.intelligent is not None:
-            t.iscandir(args.update_cache)
-        else:
-            t.scandir(args.update_cache)
-
-    elif args.show_cache:
-        t.show_cache()
-
+    if args.new_cache is not None:
+        t.scandir(args.new_cache)
+    elif args.update_cache is not None:
+        t.iscandir(args.update_cache)
+    elif args.show_cache is not False:
+         t.show_cache()
     elif args.search is not None:
         print(f"*Searching for '{args.search}'")
         r = t.search(args.search)
         _output(t, args, r)
-
-    elif args.xls is not None:
+    elif args.search_xlsx is not None:
         print("*Excel input")
-        r = t.search_xls(args.xls)
+        r = t.search_xlsx(args.search_xlsx)
         _output(t, args, r)
-
-    elif args.mpx is not None:
-        print("*MPX mode")
-        r = t.search_mpx(args.mpx)
+    elif args.search_mpx is not None:
+        print("*Excel input")
+        r = t.search_mpx(args.search_mpx)
         _output(t, args, r)
-
-    else:
-        raise ValueError("Unknown command line argument")
