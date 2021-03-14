@@ -305,22 +305,14 @@ class Tif_finder:
     def _preview(f, target_fn):
         im = Image.open(f)
 
-        if policy is None:
-            new_str = Path(target_dir).joinpath(f.stem + ".jpg")
-        else:
-            raise (TypeError, "policy not implemented yet")
-
-        if not Path(new_str).exists():
-            if im.height > 720:
-                ratio = 720 / im.height
-                new_size = round(im.width * ratio), round(im.height * ratio)
-                print(f"{f}: ({im.width}, {im.height}) -> {new_size} {ratio}")
-                im.thumbnail(new_size)
-            rgb_im = im.convert("RGB")
-            print(f"\t saving {new_str}")
-            rgb_im.save(new_str)
-        else:
-            print(f"{new_str} exists already.")
+        if im.height > 720:
+            ratio = 720 / im.height
+            new_size = round(im.width * ratio), round(im.height * ratio)
+            print(f"{f}: ({im.width}, {im.height}) -> {new_size} {ratio}")
+            im.thumbnail(new_size)
+        rgb_im = im.convert("RGB")
+        print(f"\t saving {target_fn}")
+        rgb_im.save(target_fn)
 
 
 if __name__ == "__main__":
