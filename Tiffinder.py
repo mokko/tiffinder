@@ -5,7 +5,7 @@
     For command-line front-end see end of this file.
 
     USAGE as class:
-        tf = Tif_finder(cache_fn)
+        tf = Tiffinder(cache_fn)
 
         #working with the cache
         tf.scandir(scan_dir)  # scans recursively for *.tif|*.tiff
@@ -36,7 +36,7 @@
 
     When a file is copied, the original filename is usually preserved; only if 
     multiple tifs have the same name they are varied by adding a number. The 
-    downside of this naming scheme is that if Tif_finder runs multiple times, 
+    downside of this naming scheme is that if tiffinder runs multiple times, 
     same files will be copied multiple times (because there is no identity). This 
     naming scheme may be useful for some uses, just beware.
     
@@ -330,39 +330,39 @@ if __name__ == "__main__":
     USAGE:
     Cache
         #new cache by scanning dir for *.tif[f]
-        Tif_finder.py -c cache.json --new_cache scan_dir
+        tiffinder.py -c cache.json --new_cache scan_dir
 
         #same, but use intelligent cache update
-        Tif_finder.py -c cache.json --update cache scan_dir
+        tiffinder.py -c cache.json --update cache scan_dir
 
         #show cache using specified cache_fn
-        Tif_finder.py -c cache.json  -S
+        tiffinder.py -c cache.json  -S
 
     Search
         #Lookup individual needle, cp to pwd
-        Tif_finder.py -c cache.json -s needle
+        tiffinder.py -c cache.json -s needle
 
         #Lookup individual needle, cp to target_dir
-        Tif_finder.py -c cache.json -s needle -t target_dir
+        tiffinder.py -c cache.json -s needle -t target_dir
 
         #lookup multiple needles from xlsx file
-        Tif_finder.py -c cache.json -x excel_fn
+        tiffinder.py -c cache.json -x excel_fn
 
         #read mpx file, lookup all identNr in cache and copy to pwd
-        Tif_finder.py -c cache.json -m mpx_fn
+        tiffinder.py -c cache.json -m mpx_fn
 
     Output
         #normal search, but don't copy anything, just log what would happen
-        Tif_finder.py -c cache.json -s neeedle --justlog
+        tiffinder.py -c cache.json -s neeedle --justlog
 
         #write preview instead of original file
-        Tif_finder.py -c cache.json -s neeedle --preview
+        tiffinder.py -c cache.json -s neeedle --preview
     """
 
     import argparse
     from pathlib import Path
 
-    # from Tif_finder import Tif_finder
+    # from Tiffinder import Tiffinder
     def _output(self, args, r):
         if args.justlog is not False:
             print(f"*JUST LOG")
@@ -375,7 +375,7 @@ if __name__ == "__main__":
             self.cp_results(r, args.target_dir)
 
     parser = argparse.ArgumentParser(
-        description="Tif_finder: Find *.tif[f] files by identNr"
+        description="tiffinder: Find *.tif[f] files by identNr"
     )
 
     # cache + target_dir
@@ -450,7 +450,7 @@ if __name__ == "__main__":
     print(args)
     print(f"*Loading specified cache '{args.cache_fn}'")
 
-    t = Tif_finder(args.cache_fn)
+    t = Tiffinder(args.cache_fn)
 
     if args.new_cache is not None:
         t.scandir(args.new_cache)
