@@ -57,7 +57,6 @@ from lxml import etree
 from PIL import Image
 from openpyxl import Workbook, load_workbook
 from pathlib import Path
-from glob import iglob
 
 
 class Tiffinder:
