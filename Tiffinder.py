@@ -79,7 +79,7 @@ class Tiffinder:
     def scandir(self, scan_dir):
         """Scan dir for tif and store result in tif cache.
 
-        Scans directory for *.tif|*.tiff recursively and write results to
+        Scans directory for *.tif[f?] recursively and write results to
         cache file, updating existing cache file or starting new one.
 
         Does a sloppy update, i.e will not remove cache entries for files that
@@ -88,7 +88,7 @@ class Tiffinder:
         Repeat to scan multiple dirs."""
 
         print(f"*Scanning '{scan_dir}'")
-        for path in Path(scan_dir).rglob("**/*.ti[f*]"): # tif?(f)
+        for path in Path(scan_dir).rglob("**/*.ti[f?]"): 
             abs = Path(path).resolve()
             needle = abs.stem.replace("_", " ")
             # VII c 123 a,b <1>
@@ -164,10 +164,6 @@ class Tiffinder:
 
         For each identNr from mpx look for corresponding tifs in cache"""
 
-        if target_dir is not None:
-            target_dir = os.path.realpath(target_dir)
-            if not os.path.isdir(target_dir):
-                os.makedirs(target_dir)
         tree = etree.parse(mpx_fn)
         r = tree.xpath(
             "/m:museumPlusExport/m:sammlungsobjekt/m:identNr",
@@ -204,8 +200,8 @@ class Tiffinder:
     #
     def cp_results(self, results, target_dir, policy=None):
         """ Copy files from the search_results to target_dir."""
-        self._init_log(target_dir)
 
+        self._init_log(target_dir)
         for fn in results:
             target_fn = self._default_policy(fn, target_dir)
             print(f"{fn}->")
@@ -217,9 +213,12 @@ class Tiffinder:
 
     def log_results(self, results, target_dir):
         """ Just print the log to target_dir, don't copy anything."""
+
+        self._init_log(target_dir)
         for fn in results:
             print(fn)
-            # todo logging
+            if not Path(fn).exists():
+                logging.debug(f"File not found: {fn}")
 
     def preview_results(self, results, target_dir):
         """ Make previews (720 px wide jpgs) for the search results and copy 
@@ -228,6 +227,7 @@ class Tiffinder:
         Always uses change extension naming policy.
         """
 
+        self._init_log(target_dir)
         for fn in results:
             target_fn = self._change_extension_policy(fn, target_dir, "jpg")
             print(f"***{target_fn}")
