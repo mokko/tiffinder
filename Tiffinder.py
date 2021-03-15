@@ -88,11 +88,14 @@ class Tiffinder:
         Repeat to scan multiple dirs."""
 
         print(f"*Scanning '{scan_dir}'")
-        for path in Path(scan_dir).rglob("**/*.ti[f*]"):
+        for path in Path(scan_dir).rglob("**/*.ti[f*]"): # tif?(f)
             abs = Path(path).resolve()
             needle = abs.stem.replace("_", " ")
-            print(f"{abs}")
-            self.cache[str(abs)] = needle
+            # VII c 123 a,b <1>
+            # only 5 elements, discard rest
+            short = " ".join(needle.split(" ", maxsplit=5)) 
+            print(f"{abs} - {short}")
+            self.cache[str(abs)] = short
         self._write_cache()
 
     def iscandir(self, scan_dir):
