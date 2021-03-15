@@ -215,14 +215,15 @@ class Tiffinder:
                 print(f" {target_fn}")
                 self._simple_copy(fn, target_fn)
 
-    def log_results(self, results, args):
+    def log_results(self, results, target_dir):
         """ Just print the log to target_dir, don't copy anything."""
         for fn in results:
             print(fn)
             # todo logging
 
     def preview_results(self, results, target_dir):
-        """Make previews for the search results and copy those to target_dir.
+        """ Make previews (720 px wide jpgs) for the search results and copy 
+        those to target_dir.
 
         Always uses change extension naming policy.
         """
@@ -278,8 +279,8 @@ class Tiffinder:
             i += 1
         return target_fn
 
-    def _init_log(self, outdir):
-        log_fn = Path(outdir).joinpath("report.log")
+    def _init_log(self, outdir="."):
+        log_fn = Path(outdir).joinpath("tiffinder.log")
 
         logging.basicConfig(
             datefmt="%Y%m%d %I:%M:%S %p",
