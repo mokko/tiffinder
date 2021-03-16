@@ -13,7 +13,7 @@
         tf.show_cache()       # prints cache to STDOUT 
 
         #three different searches
-        ls=tf.search (needle) # matching path in list, for single needle
+        r = tf.search (needle) # matching path in list, for single needle
         r = tf.search_xlsx(needle) # with multiple needles from xls, 
                               # search cache & report to STDOUT
 
@@ -88,7 +88,7 @@ class Tiffinder:
         Repeat to scan multiple dirs."""
 
         print(f"*Scanning '{scan_dir}'")
-        for path in Path(scan_dir).rglob("**/*.ti[f?]"): 
+        for path in Path(scan_dir).rglob("**/*.tif[f?]"): 
             abs = Path(path).resolve()
             needle = abs.stem.replace("_", " ")
             # VII c 123 a,b <1>
@@ -190,7 +190,7 @@ class Tiffinder:
         print("*Displaying cache contents")
         if hasattr(self, "cache"):
             for item in self.cache:
-                print(f"  {item}")
+                print(f" {item} [{self.cache[item]}]")
             print(f"Number of tifs in cache: {len(self.cache)}")
         else:
             print("Cache does not exist!")
