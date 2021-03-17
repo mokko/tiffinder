@@ -96,7 +96,9 @@ class Tiffinder:
             short = " ".join(needle.split(" ", maxsplit=5)) 
             print(f"{abs} - {short}")
             self.cache[str(abs)] = short
-        self._write_cache()
+        print("*Writing cache file")
+        with open(self.cache_fn, "w") as f:
+            json.dump(self.cache, f, indent=1)
 
     def iscandir(self, scan_dir):
         """intelligent directory scan
@@ -218,7 +220,7 @@ class Tiffinder:
         for fn in results:
             print(fn)
             if not Path(fn).exists():
-                logging.debug(f"File not found: {fn}")
+                logging.warning(f"File not found: {fn}")
 
     def preview_results(self, results, target_dir):
         """ Make previews (720 px wide jpgs) for the search results and copy 
@@ -298,7 +300,7 @@ class Tiffinder:
             try:
                 shutil.copy2(source, target)  # copy2 preserves file info
             except:
-                logging.debug(f"File not found: {source}")
+                logging.warning(f"File not found: {source}")
 
     def _prepare_wb(self, xls_fn):
         """Read existing xlsx and return workbook"""
@@ -308,11 +310,6 @@ class Tiffinder:
             return load_workbook(filename=xls_fn)
         else:
             raise ValueError(f"Excel file not found: {xls_fn}")
-
-    def _write_cache(self):
-        print("*Writing cache file")
-        with open(self.cache_fn, "w") as f:
-            json.dump(self.cache, f, indent=1)
 
     def _preview(self, source, target):
         im = Image.open(source)
